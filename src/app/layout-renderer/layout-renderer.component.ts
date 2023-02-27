@@ -20,6 +20,7 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
   zoneInfo: GSWHzoneAPIResponseData;
 
   initialZoom = 0;
+  initialDistance = undefined;
 
 
   get getCustomCanvasConfig(): CustomCanvasConfig {
@@ -83,10 +84,16 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
     const pointer = e?.pointer;
     const event = e?.e as unknown as TouchEvent;
 
-    if (event?.targetTouches?.length === 2) {
+    if (event?.targetTouches?.length === 2 && event?.type === 'touch') {
       // tslint:disable-next-line:max-line-length
       const distance = this.onTwoPointDistance(event?.targetTouches[0]?.clientX, event?.targetTouches[0]?.clientY, event?.targetTouches[1]?.clientX, event?.targetTouches[1]?.clientY);
-      this.canvasRef.setZoom(distance / this.canvasRef?.getZoom());
+
+      if (this.initialDistance === undefined) {
+         this.initialDistance = distance;
+      }
+
+
+      this.canvasRef.setZoom((distance  + this.canvasRef?.getZoom()) / this.initialDistance);
       console.log(distance, pointer);
     }
 
