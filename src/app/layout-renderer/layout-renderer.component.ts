@@ -19,6 +19,8 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
 
   zoneInfo: GSWHzoneAPIResponseData;
 
+  initialZoom = 0;
+
 
   get getCustomCanvasConfig(): CustomCanvasConfig {
 
@@ -39,6 +41,7 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
   }
 
   ngOnInit(): void {
+    this.initialZoom = 10;
     this.zoneInfo = zoneInfo as unknown as GSWHzoneAPIResponseData;
 
   }
@@ -57,7 +60,7 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
 
     this.canvasRef = new fabric.Canvas('canvas', {preserveObjectStacking: true, selection: true, controlsAboveOverlay: true,
         centeredScaling: true,
-        allowTouchScrolling: true, });
+        allowTouchScrolling: true});
     fabric.Object.prototype.objectCaching = false;
     this.canvasRef.setWidth(this.getCustomCanvasConfig?.canvasWidth);
     this.canvasRef.setHeight(this.getCustomCanvasConfig?.canvasHeight);
@@ -67,7 +70,7 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
 
 
   onRenderCanvas() {
-    this.canvasRef.setZoom(10);
+    this.canvasRef.setZoom(this.initialZoom);
     this.canvasRef.renderAll();
     // this.canvasRef.on({''}, null);
     this.canvasRef.on('mouse:wheel', (e) =>  this.ngZone.run(() => { this.onTransformCanvas(e?.e); }) );
@@ -78,13 +81,27 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
 
   onTransFormMobileDevices(e: IEvent) {
     const pointer = e?.pointer;
-    const event = e as unknown as TouchEvent;
-    console.log(event);
-    // this.canvasRef.zoomToPoint({ x: event, y: pointer?.y}, null);
-    // event.preventDefault();
-    // event.stopPropagation();
-    // this.canvasRef.renderAll();
+    const event = e?.e as unknown as TouchEvent;
+
+    if (event?.targetTouches?.length === 2) {
+      // tslint:disable-next-line:max-line-length
+      const distance = this.onTwoPointDistance(event?.targetTouches[0]?.clientX, event?.targetTouches[0]?.clientY, event?.targetTouches[1]?.clientX, event?.targetTouches[1]?.clientY);
+      this.canvasRef.setZoom(distance / this.canvasRef?.getZoom());
+      console.log(distance, pointer);
+    }
+
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.canvasRef.renderAll();
   }
+
+ onTwoPointDistance(x1: number, y1: number, x2: number, y2: number) {
+  const xDistance = x2 - x1;
+  const yDistance = y2 - y1;
+  const distance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+  return distance;
+}
 
 
 
@@ -95,6 +112,7 @@ export class LayoutRendererComponent implements OnInit, AfterViewInit , OnDestro
     //  if (zoom > 100) { zoom = 20; }
     //  if (zoom < 0.01) { zoom = 0.01; }
      this.canvasRef.zoomToPoint({ x: e.offsetX, y: e.offsetY }, zoom);
+     this.initialZoom = zoom;
      e.preventDefault();
      e.stopPropagation();
      this.canvasRef.renderAll();
