@@ -82,9 +82,13 @@ export interface GSWHBlocksAPIResponse {
   filter: number;
   cells: Array<GSWHCellsAPIResponse>;
   block_coordinates: IPoint;
+  x: number;
+  y: number;
 }
 
 export interface GSWHCellsAPIResponse {
+  cell_height: number;
+  cell_width: number;
   cell_id: string;
   cell_name: string;
   cell_area: number;
@@ -93,6 +97,8 @@ export interface GSWHCellsAPIResponse {
   is_occupied: boolean;
   occupancy_status: OccupancyStatus;
   cell_order: number;
+  x: number;
+  y: number;
 }
 
 export interface GSWHOutSideWareHouse {
